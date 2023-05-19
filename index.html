@@ -6,6 +6,7 @@
     body {
       font-family: Arial, sans-serif;
       margin: 20px;
+      background-color: #f2f2f2;
     }
 
     h1 {
@@ -16,16 +17,20 @@
       font-weight: bold;
     }
 
-    input[type="text"] {
-      padding: 5px;
+    input[type="text"],
+    select {
+      padding: 8px;
       margin-right: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
     }
 
     button {
-      padding: 5px 10px;
+      padding: 8px 16px;
       background-color: #4CAF50;
       color: white;
       border: none;
+      border-radius: 4px;
       cursor: pointer;
     }
 
@@ -36,7 +41,7 @@
     }
 
     th, td {
-      padding: 8px;
+      padding: 12px;
       text-align: left;
       border-bottom: 1px solid #ddd;
     }
@@ -50,10 +55,18 @@
 <body>
   <h1>Employee Data</h1>
 
-  <div>
+  <div style="margin-top: 20px;">
     <label for="searchInput">Search by Name:</label>
     <input type="text" id="searchInput">
-    <button onclick="searchEmployees()">Search</button>
+    <label for="designationSelect">Filter by Designation:</label>
+    <select id="designationSelect">
+      <option value="">All</option>
+    </select>
+    <label for="skillSelect">Filter by Skill:</label>
+    <select id="skillSelect">
+      <option value="">All</option>
+    </select>
+    <button onclick="filterEmployees()">Apply Filter</button>
   </div>
 
   <table>
@@ -70,18 +83,61 @@
   </table>
 
   <script>
+    // ... JavaScript code ...
+
     let employeeData = [];
+    let designations = [];
+    let skills = [];
 
     // Fetch data from the provided link
     fetch('https://raw.githubusercontent.com/dixitsoham7/dixitsoham7.github.io/main/index.json')
       .then(response => response.json())
       .then(data => {
         employeeData = data.employees;
+        extractDesignations(employeeData);
+        extractSkills(employeeData);
+        populateDesignationSelect();
+        populateSkillSelect();
         displayEmployees(employeeData);
       })
       .catch(error => {
         console.log('An error occurred while fetching the data:', error);
       });
+
+    function extractDesignations(employees) {
+      designations = Array.from(new Set(employees.map(employee => employee.designation)));
+    }
+
+    function extractSkills(employees) {
+      skills = [];
+      employees.forEach(employee => {
+        employee.skills.forEach(skill => {
+          if (!skills.includes(skill)) {
+            skills.push(skill);
+          }
+        });
+      });
+    }
+
+    function populateDesignationSelect() {
+      const designationSelect = document.getElementById('designationSelect');
+      designations.forEach(designation => {
+        const option = document.createElement('option');
+        option.text = designation;
+        option.value = designation;
+        designationSelect.appendChild(option);
+      });
+    }
+
+    function populateSkillSelect() {
+      const skillSelect = document.getElementById('skillSelect');
+      skills.forEach(skill => {
+        const option = document.createElement('option');
+        option.text = skill;
+        option.value = skill;
+        skillSelect.appendChild(option);
+      });
+    }
 
     function displayEmployees(employees) {
       const tableBody = document.getElementById('employeeData');
@@ -99,9 +155,27 @@
       });
     }
 
-    function searchEmployees() {
+    function filterEmployees() {
       const searchInput = document.getElementById('searchInput').value.trim().toLowerCase();
-      const filteredEmployees = employeeData.filter(employee => employee.name && employee.name.toLowerCase().includes(searchInput));
+      const designationSelect = document.getElementById('designationSelect');
+      const selectedDesignation = designationSelect.value.trim().toLowerCase();
+      const skillSelect = document.getElementById('skillSelect');
+      const selectedSkill = skillSelect.value.trim().toLowerCase();
+
+      let filteredEmployees = employeeData;
+
+      if (searchInput !== '') {
+        filteredEmployees = filteredEmployees.filter(employee => employee.name && employee.name.toLowerCase().includes(searchInput));
+      }
+
+      if (selectedDesignation !== '') {
+        filteredEmployees = filteredEmployees.filter(employee => employee.designation && employee.designation.toLowerCase() === selectedDesignation);
+      }
+
+      if (selectedSkill !== '') {
+        filteredEmployees = filteredEmployees.filter(employee => employee.skills.includes(selectedSkill));
+      }
+
       displayEmployees(filteredEmployees);
     }
   </script>
