@@ -7,121 +7,102 @@
       font-family: Arial, sans-serif;
       margin: 20px;
     }
-    
+
     h1 {
-      margin-bottom: 20px;
+      text-align: center;
     }
-    
-    input {
-      margin-bottom: 10px;
+
+    label {
+      font-weight: bold;
     }
-    
+
+    input[type="text"] {
+      padding: 5px;
+      margin-right: 10px;
+    }
+
+    button {
+      padding: 5px 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
     table {
-      width: 100%;
       border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
     }
-    
+
     th, td {
-      border: 1px solid #ddd;
       padding: 8px;
       text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
     }
   </style>
 </head>
 <body>
-  <h1>Developer List</h1>
-  
-  <input type="text" id="nameFilter" placeholder="Search by Name" />
-  
-  <select id="designationFilter">
-    <option value="">All Designations</option>
-    <option value="Frontend Developer">Frontend Developer</option>
-    <option value="Backend Developer">Backend Developer</option>
-    <option value="Full Stack Developer">Full Stack Developer</option>
-  </select>
-  
-  <button onclick="filterDevelopers()">Search</button>
-  
-  <table id="developerTable">
-    <tr>
-      <th>Name</th>
-      <th>Designation</th>
-      <th>Skills</th>
-    </tr>
+  <h1>Employee Data</h1>
+
+  <div>
+    <label for="searchInput">Search by Name:</label>
+    <input type="text" id="searchInput">
+    <button onclick="searchEmployees()">Search</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Designation</th>
+        <th>Skills</th>
+      </tr>
+    </thead>
+    <tbody id="employeeData">
+    </tbody>
   </table>
-  
+
   <script>
-    // JSON data stored locally
-    const jsonData = {
-      "developers": [
-        {
-          "name": "John Doe",
-          "designation": "Frontend Developer",
-          "skills": ["HTML", "CSS", "JavaScript"]
-        },
-        {
-          "name": "Jane Smith",
-          "designation": "Backend Developer",
-          "skills": ["Python", "Java", "SQL"]
-        },
-        {
-          "name": "David Johnson",
-          "designation": "Full Stack Developer",
-          "skills": ["HTML", "CSS", "JavaScript", "Node.js", "React"]
-        },
-        {
-          "name": "Sarah Davis",
-          "designation": "Frontend Developer",
-          "skills": ["HTML", "CSS", "JavaScript", "Angular"]
-        }
-      ]
-      
-    };
+    let employeeData = [];
+
+    // Fetch data from the provided link
     fetch('https://raw.githubusercontent.com/dixitsoham7/dixitsoham7.github.io/main/index.json')
       .then(response => response.json())
       .then(data => {
-        employees = data.employees;
-
-        renderEmployees(employees);
+        employeeData = data.employees;
+        displayEmployees(employeeData);
       })
-      .catch(error => console.error('Error fetching JSON:', error));
+      .catch(error => {
+        console.log('An error occurred while fetching the data:', error);
+      });
 
-    // Render developers on the screen
-    const developerTable = document.getElementById('developerTable');
-    jsonData.developers.forEach(developer => {
-      const row = document.createElement('tr');
-      const nameCell = document.createElement('td');
-      const designationCell = document.createElement('td');
-      const skillsCell = document.createElement('td');
+    function displayEmployees(employees) {
+      const tableBody = document.getElementById('employeeData');
+      tableBody.innerHTML = '';
 
-      nameCell.textContent = developer.name;
-      designationCell.textContent = developer.designation;
-      skillsCell.textContent = developer.skills.join(', ');
+      employees.forEach(employee => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${employee.id}</td>
+          <td>${employee.name || '-'}</td>
+          <td>${employee.designation || '-'}</td>
+          <td>${employee.skills.length > 0 ? employee.skills.join(', ') : '-'}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
 
-      row.appendChild(nameCell);
-      row.appendChild(designationCell);
-      row.appendChild(skillsCell);
-
-      developerTable.appendChild(row);
-    });
-
-    // Filter developers based on name and designation/skills
-    function filterDevelopers() {
-      const nameFilter = document.getElementById('nameFilter').value.toLowerCase();
-      const designationFilter = document.getElementById('designationFilter').value.toLowerCase();
-      const rows = developerTable.getElementsByTagName('tr');
-
-      for (let i = 1; i < rows.length; i++) {
-        const name = rows[i].getElementsByTagName('td')[0].textContent.toLowerCase();
-        const designation = rows[i].getElementsByTagName('td')[1].textContent.toLowerCase();
-
-        // Show/hide rows based on the filter criteria
-        if (name.includes(nameFilter) && (designationFilter === '' || designation.includes(designationFilter))) {
-          rows[i].style.display = '';
-        } else {
-          rows[i].style.display = 'none';
-        }
-      }
+    function searchEmployees() {
+      const searchInput = document.getElementById('searchInput').value.trim().toLowerCase();
+      const filteredEmployees = employeeData.filter(employee => employee.name && employee.name.toLowerCase().includes(searchInput));
+      displayEmployees(filteredEmployees);
     }
   </script>
 </body>
