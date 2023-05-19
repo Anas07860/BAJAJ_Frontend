@@ -3,134 +3,126 @@
 <head>
   <title>JSON Data Rendering</title>
   <style>
-    /* Add your CSS styles here */
     body {
       font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
+      margin: 20px;
     }
     
     h1 {
-      text-align: center;
-    }
-    
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    
-    .search-container {
-      display: flex;
-      justify-content: space-between;
       margin-bottom: 20px;
     }
     
-    .search-input {
-      width: 70%;
-      padding: 8px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    
-    .filter-select {
-      width: 30%;
-      padding: 8px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    
-    .developer-card {
-      background-color: #f5f5f5;
-      padding: 10px;
+    input {
       margin-bottom: 10px;
     }
     
-    .developer-card h2 {
-      font-size: 18px;
-      margin: 0;
+    table {
+      width: 100%;
+      border-collapse: collapse;
     }
     
-    .developer-card p {
-      margin: 5px 0;
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Developers</h1>
+  <h1>Developer List</h1>
   
-    <div class="search-container">
-      <input type="text" id="searchInput" class="search-input" placeholder="Search by name">
-      <select id="designationSelect" class="filter-select">
-        <option value="">All</option>
-        <option value="Frontend Developer">Frontend Developer</option>
-        <option value="Backend Developer">Backend Developer</option>
-        <option value="Full Stack Developer">Full Stack Developer</option>
-      </select>
-    </div>
+  <input type="text" id="nameFilter" placeholder="Search by Name" />
   
-    <div id="developersList"></div>
-
-    <script>
-      document.addEventListener("DOMContentLoaded", function() {
-        // Fetch JSON data
-        fetch('https://raw.githubusercontent.com/dixitsoham7/dixitsoham7.github.io/main/index.json')
-          .then(response => response.json())
-          .then(data => {
-            renderDevelopers(data); // Render developers initially
-          })
-          .catch(error => {
-            console.error('Error:', error);
-          });
-
-        function filterDevelopers() {
-          const searchInput = document.getElementById("searchInput").value.toLowerCase();
-          const designationSelect = document.getElementById("designationSelect").value;
-
-          fetch('https://raw.githubusercontent.com/dixitsoham7/dixitsoham7.github.io/main/index.json')
-            .then(response => response.json())
-            .then(data => {
-              const filteredDevelopers = data.filter(developer => {
-                return (
-                  developer.name.toLowerCase().includes(searchInput) &&
-                  (designationSelect === "" || developer.designation.includes(designationSelect))
-                );
-              });
-
-              renderDevelopers(filteredDevelopers);
-            })
-            .catch(error => {
-              console.error('Error:', error);
-            });
+  <select id="designationFilter">
+    <option value="">All Designations</option>
+    <option value="Frontend Developer">Frontend Developer</option>
+    <option value="Backend Developer">Backend Developer</option>
+    <option value="Full Stack Developer">Full Stack Developer</option>
+  </select>
+  
+  <button onclick="filterDevelopers()">Search</button>
+  
+  <table id="developerTable">
+    <tr>
+      <th>Name</th>
+      <th>Designation</th>
+      <th>Skills</th>
+    </tr>
+  </table>
+  
+  <script>
+    // JSON data stored locally
+    const jsonData = {
+      "developers": [
+        {
+          "name": "John Doe",
+          "designation": "Frontend Developer",
+          "skills": ["HTML", "CSS", "JavaScript"]
+        },
+        {
+          "name": "Jane Smith",
+          "designation": "Backend Developer",
+          "skills": ["Python", "Java", "SQL"]
+        },
+        {
+          "name": "David Johnson",
+          "designation": "Full Stack Developer",
+          "skills": ["HTML", "CSS", "JavaScript", "Node.js", "React"]
+        },
+        {
+          "name": "Sarah Davis",
+          "designation": "Frontend Developer",
+          "skills": ["HTML", "CSS", "JavaScript", "Angular"]
         }
+      ]
+      
+    };
+    fetch('https://raw.githubusercontent.com/dixitsoham7/dixitsoham7.github.io/main/index.json')
+      .then(response => response.json())
+      .then(data => {
+        employees = data.employees;
 
-        function renderDevelopers(data) {
-          const developersList = document.getElementById("developersList");
-          developersList.innerHTML = ""; // Clear previous data
+        renderEmployees(employees);
+      })
+      .catch(error => console.error('Error fetching JSON:', error));
 
-          data.forEach(developer => {
-            const developerCard = document.createElement("div");
-            developerCard.classList.add("developer-card");
+    // Render developers on the screen
+    const developerTable = document.getElementById('developerTable');
+    jsonData.developers.forEach(developer => {
+      const row = document.createElement('tr');
+      const nameCell = document.createElement('td');
+      const designationCell = document.createElement('td');
+      const skillsCell = document.createElement('td');
 
-            const name = document.createElement("h2");
-            name.textContent = developer.name;
-            developerCard.appendChild(name);
+      nameCell.textContent = developer.name;
+      designationCell.textContent = developer.designation;
+      skillsCell.textContent = developer.skills.join(', ');
 
-            const jsonData = document.createElement("p");
-            jsonData.textContent = JSON.stringify(developer);
-            developerCard.appendChild(jsonData);
+      row.appendChild(nameCell);
+      row.appendChild(designationCell);
+      row.appendChild(skillsCell);
 
-            developersList.appendChild(developerCard);
-          });
+      developerTable.appendChild(row);
+    });
+
+    // Filter developers based on name and designation/skills
+    function filterDevelopers() {
+      const nameFilter = document.getElementById('nameFilter').value.toLowerCase();
+      const designationFilter = document.getElementById('designationFilter').value.toLowerCase();
+      const rows = developerTable.getElementsByTagName('tr');
+
+      for (let i = 1; i < rows.length; i++) {
+        const name = rows[i].getElementsByTagName('td')[0].textContent.toLowerCase();
+        const designation = rows[i].getElementsByTagName('td')[1].textContent.toLowerCase();
+
+        // Show/hide rows based on the filter criteria
+        if (name.includes(nameFilter) && (designationFilter === '' || designation.includes(designationFilter))) {
+          rows[i].style.display = '';
+        } else {
+          rows[i].style.display = 'none';
         }
-
-        document.getElementById("searchInput").addEventListener("input", filterDevelopers);
-        document.getElementById("designationSelect").addEventListener("change", filterDevelopers);
-      });
-    </script>
-  </div>
+      }
+    }
+  </script>
 </body>
 </html>
